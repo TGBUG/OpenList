@@ -116,8 +116,9 @@ func (d *ILanZou) List(ctx context.Context, dir model.Obj, args model.ListArgs) 
 	
 	if d.SortMode == "asc" || d.SortMode == "desc" {
 		isAsc := d.SortMode == "asc"
-		utils.SortObjsByCustomName(objs, isAsc)
+		SortObjsByCustomName(objs, isAsc)
 	}
+	return objs, nil
 }
 
 func (d *ILanZou) Link(ctx context.Context, file model.Obj, args model.LinkArgs) (*model.Link, error) {

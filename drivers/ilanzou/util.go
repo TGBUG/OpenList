@@ -8,11 +8,16 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"regexp"
+	"sort"
+	"unicode"
 
 	"github.com/OpenListTeam/OpenList/drivers/base"
 	"github.com/OpenListTeam/OpenList/pkg/utils"
 	"github.com/foxxorcat/mopan-sdk-go"
 	"github.com/go-resty/resty/v2"
+	"github.com/mozillazg/go-pinyin"
+	"github.com/alist-org/alist/v3/internal/model"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -114,4 +119,87 @@ func (d *ILanZou) unproved(pathname, method string, callback base.ReqCallback) (
 
 func (d *ILanZou) proved(pathname, method string, callback base.ReqCallback) ([]byte, error) {
 	return d.request("/"+d.conf.proved+pathname, method, callback, true)
+}
+
+func SortObjsByCustomName(objs []model.Obj, asc bool) {
+	sort.SliceStable(objs, func(i, j int) bool {
+		a := normalizeName(objs[i].GetName())
+		b := normalizeName(objs[j].GetName())
+
+		if asc {
+			return compareCustom(a, b)
+		} else {
+			return compareCustom(b, a)
+		}
+	})
+}
+
+func normalizeName(s string) []string {
+	result := []string{}
+	runes := []rune(s)
+	i := 0
+	for i < len(runes) {
+		r := runes[i]
+		if unicode.IsDigit(r) {
+			start := i
+			for i < len(runes) && unicode.IsDigit(runes[i]) {
+				i++
+			}
+			result = append(result, string(runes[start:i]))
+		} else if unicode.Is(unicode.Han, r) {
+			py := pinyin.SinglePinyin(r, pinyin.NewArgs())
+			if len(py) > 0 {
+				result = append(result, py[0])
+			} else {
+				result = append(result, string(r))
+			}
+			i++
+		} else {
+			result = append(result, string(r))
+			i++
+		}
+	}
+	return result
+}
+
+func compareCustom(a, b []string) bool {
+	for i := 0; i < len(a) && i < len(b); i++ {
+		xa := a[i]
+		xb := b[i]
+
+		if isNumber(xa) && isNumber(xb) {
+			an, _ := strconv.Atoi(xa)
+			bn, _ := strconv.Atoi(xb)
+			if an != bn {
+				return an < bn
+			}
+			continue
+		}
+
+		if xa != xb {
+			return xa < xb
+		}
+	}
+	return len(a) < len(b)
+}
+
+func isNumber(s string) bool {
+	return regexp.MustCompile(`^\d+$`).MatchString(s)
+}
+
+func pinyinSingleRune(r rune) string {
+	arr := pinyin.SinglePinyin(r, pinyin.NewArgs())
+	if len(arr) > 0 {
+		return strings.ToLower(string(arr[0][0]))
+	}
+	return string(r)
+}
+
+func pinyinSinglePinyin(r rune) string {
+	args := pinyin.NewArgs()
+	arr := pinyin.Pinyin(string(r), args)
+	if len(arr) > 0 && len(arr[0]) > 0 {
+		return arr[0][0]
+	}
+	return string(r)
 }

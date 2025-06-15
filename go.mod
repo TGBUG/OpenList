@@ -270,3 +270,4 @@ require (
 )
 
 // replace github.com/xhofe/115-sdk-go => ../../xhofe/115-sdk-go
+replace cloud.google.com/go => cloud.google.com/go/compute/metadata v0.7.0

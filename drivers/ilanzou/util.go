@@ -17,6 +17,7 @@ import (
 	"github.com/foxxorcat/mopan-sdk-go"
 	"github.com/go-resty/resty/v2"
 	"github.com/mozillazg/go-pinyin"
+	"github.com/alist-org/alist/v3/internal/model"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -146,9 +147,9 @@ func normalizeName(s string) []string {
 			}
 			result = append(result, string(runes[start:i]))
 		} else if unicode.Is(unicode.Han, r) {
-			py := pinyin.SinglePinyin(r)
-			if py != "" {
-				result = append(result, py)
+			py := pinyin.SinglePinyin(r, pinyin.NewArgs())
+			if len(py) > 0 {
+				result = append(result, py[0])
 			} else {
 				result = append(result, string(r))
 			}
@@ -187,8 +188,7 @@ func isNumber(s string) bool {
 }
 
 func pinyinSingleRune(r rune) string {
-	args := pinyin.NewArgs()
-	arr := pinyin.SinglePinyin(r)
+	arr := pinyin.SinglePinyin(r, pinyin.NewArgs())
 	if len(arr) > 0 {
 		return strings.ToLower(string(arr[0][0]))
 	}

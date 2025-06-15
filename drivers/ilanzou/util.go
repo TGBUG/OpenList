@@ -120,7 +120,6 @@ func (d *ILanZou) proved(pathname, method string, callback base.ReqCallback) ([]
 	return d.request("/"+d.conf.proved+pathname, method, callback, true)
 }
 
-// 对象排序（按自定义名称规则）
 func SortObjsByCustomName(objs []model.Obj, asc bool) {
 	sort.SliceStable(objs, func(i, j int) bool {
 		a := normalizeName(objs[i].GetName())
@@ -134,7 +133,6 @@ func SortObjsByCustomName(objs []model.Obj, asc bool) {
 	})
 }
 
-// 转换为分组字符数组（考虑拼音、数字）
 func normalizeName(s string) []string {
 	result := []string{}
 	runes := []rune(s)
@@ -163,13 +161,11 @@ func normalizeName(s string) []string {
 	return result
 }
 
-// 比较规则：大写优先，拼音、数字按整体比较
 func compareCustom(a, b []string) bool {
 	for i := 0; i < len(a) && i < len(b); i++ {
 		xa := a[i]
 		xb := b[i]
 
-		// 数字比较
 		if isNumber(xa) && isNumber(xb) {
 			an, _ := strconv.Atoi(xa)
 			bn, _ := strconv.Atoi(xb)
@@ -179,12 +175,10 @@ func compareCustom(a, b []string) bool {
 			continue
 		}
 
-		// 非数字：比较 ASCII，区分大小写
 		if xa != xb {
 			return xa < xb
 		}
 	}
-	// 长度短者优先
 	return len(a) < len(b)
 }
 
@@ -192,7 +186,6 @@ func isNumber(s string) bool {
 	return regexp.MustCompile(`^\d+$`).MatchString(s)
 }
 
-// 获取拼音首字母（只取第一个字符）
 func pinyinSingleRune(r rune) string {
 	args := pinyin.NewArgs()
 	arr := pinyin.SinglePinyin(r)
@@ -202,7 +195,6 @@ func pinyinSingleRune(r rune) string {
 	return string(r)
 }
 
-// 单字符拼音（首字母）
 func pinyinSinglePinyin(r rune) string {
 	args := pinyin.NewArgs()
 	arr := pinyin.Pinyin(string(r), args)

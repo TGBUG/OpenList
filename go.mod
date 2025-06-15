@@ -77,6 +77,7 @@ require (
 	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.11
 	github.com/mozillazg/go-pinyin v0.20.0
+	github.com/creack/pty
 )
 
 require (

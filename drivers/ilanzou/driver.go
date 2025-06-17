@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -20,6 +21,7 @@ import (
 	"github.com/OpenListTeam/OpenList/pkg/utils"
 	"github.com/foxxorcat/mopan-sdk-go"
 	"github.com/go-resty/resty/v2"
+	"github.com/maruel/natural"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -90,7 +92,7 @@ func (d *ILanZou) List(ctx context.Context, dir model.Obj, args model.ListArgs) 
 			break
 		}
 	}
-	return utils.SliceConvert(res, func(f ListItem) (model.Obj, error) {
+	result, err := utils.SliceConvert(res, func(f ListItem) (model.Obj, error) {
 		updTime, err := time.ParseInLocation("2006-01-02 15:04:05", f.UpdTime, time.Local)
 		if err != nil {
 			return nil, err
@@ -113,6 +115,29 @@ func (d *ILanZou) List(ctx context.Context, dir model.Obj, args model.ListArgs) 
 		}
 		return &obj, nil
 	})
+
+	if d.SortBy != "default" {
+		var names []string
+		for _, item := range result {
+			names = append(names, item.(*model.Object).Name)
+		}
+		sort.Sort(natural.StringSlice(names))
+
+		sortedResult := make([]model.Obj, len(result))
+		for i, name := range names {
+			for _, item := range result {
+				if item.(*model.Object).Name == name {
+					sortedResult[i] = item
+					break
+				}
+			}
+		}
+		if d.SortBy == "desc" {
+			reverse(sortedResult)
+		}
+		return sortedResult, nil
+	}
+	return result, err
 }
 
 func (d *ILanZou) Link(ctx context.Context, file model.Obj, args model.LinkArgs) (*model.Link, error) {

@@ -10,6 +10,7 @@ type Addition struct {
 	Username string `json:"username" type:"string" required:"true"`
 	Password string `json:"password" type:"string" required:"true"`
 	Ip       string `json:"ip" type:"string"`
+	SortBy   string `json:"sort-by" type:"select" required:"true" options:"asc,desc,default" default:"default"`
 
 	Token string
 	UUID  string

@@ -3,6 +3,7 @@ package template
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/OpenListTeam/OpenList/internal/model"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -114,4 +115,10 @@ func (d *ILanZou) unproved(pathname, method string, callback base.ReqCallback) (
 
 func (d *ILanZou) proved(pathname, method string, callback base.ReqCallback) ([]byte, error) {
 	return d.request("/"+d.conf.proved+pathname, method, callback, true)
+}
+
+func reverse(list []model.Obj) {
+	for i, j := 0, len(list)-1; i < j; i, j = i+1, j-1 {
+		list[i], list[j] = list[j], list[i]
+	}
 }
